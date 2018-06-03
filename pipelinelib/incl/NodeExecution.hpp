@@ -11,6 +11,7 @@ namespace Pipeline {
 class NodeExecution {
 public:
     NodeBase& registerNode(NodeBase* node);
+    void execute(NodeBase* endNode);
 
 private:
     std::vector<std::unique_ptr<NodeBase>> m_nodes;

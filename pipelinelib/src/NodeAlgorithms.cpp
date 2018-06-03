@@ -7,7 +7,9 @@ bool mfep::Pipeline::isDependentOn(const mfep::Pipeline::NodeBase* node,
         if (n == node) {
             return true;
         }
-        return isDependentOn(node, n);
+        if (isDependentOn(node, n)) {
+            return true;
+        }
     }
     return false;
 }

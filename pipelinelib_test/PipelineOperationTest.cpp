@@ -107,3 +107,18 @@ TEST_CASE("Check exceptions") {
     connect(add1, add2, 0, 0);
     REQUIRE_THROWS_AS(connect(add2, add1, 0, 0), PipelineException);
 }
+TEST_CASE("Test simple execution example") {
+    NodeExecution exec;
+    auto& n1 = exec.registerNode(new ConstIntNode(150));
+    auto& n2 = exec.registerNode(new ConstIntNode(-54));
+    auto& add = exec.registerNode(new IntAddNode);
+    std::stringstream stream;
+    auto& printer = exec.registerNode(new IntPrinterNode(stream));
+
+    connect(add, n1, 0, 0);
+    connect(add, n2, 1, 0);
+    connect(printer, add, 0, 0);
+
+    exec.execute(&printer);
+    REQUIRE(stream.str() == "96");
+}

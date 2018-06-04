@@ -20,7 +20,8 @@ void NodeExecution::execute(NodeBase *endNode) {
         }
     }
     while(!executionList.empty()) {
-        (*--executionList.end())->evaluate();
+        auto* node = *--executionList.end();
+        node->evaluate();
         executionList.pop_back();
     }
 }

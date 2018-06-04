@@ -1,5 +1,5 @@
 #include <sstream>
-#include "catch.hpp"
+#include "3rd_party/catch.hpp"
 #include "NodeStructure.hpp"
 #include "NodeAlgorithms.hpp"
 #include "NodeExecution.hpp"

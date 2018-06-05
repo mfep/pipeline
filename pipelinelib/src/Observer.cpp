@@ -26,7 +26,9 @@ void mfep::Pipeline::Observable::changed() const {
 }
 
 mfep::Pipeline::Observer::~Observer() {
-    m_target->detach(this);
+    if (m_target != nullptr) {
+        m_target->detach(this);
+    }
 }
 
 void mfep::Pipeline::Observer::targetDeleted() {}

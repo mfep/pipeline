@@ -155,3 +155,14 @@ TEST_CASE("Execution stress test") {
     REQUIRE(ss.str() == "65536");
     exec.execute(&printer);
 }
+TEST_CASE("Output to multiple nodes") {
+    ConstIntNode n(42);
+    std::stringstream ss;
+    IntPrinterNode printer1(ss), printer2(ss);
+    connect(printer1, n, 0, 0);
+    connect(printer2, n, 0, 0);
+    n.evaluate();
+    printer1.evaluate();
+    printer2.evaluate();
+    REQUIRE(ss.str() == "4242");
+}

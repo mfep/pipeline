@@ -111,7 +111,7 @@ TEST_CASE("Test simple execution example") {
     NodeExecution exec;
     auto& n1 = exec.registerNode(new ConstIntNode(150));
     auto& n2 = exec.registerNode(new ConstIntNode(-54));
-    auto& add = exec.registerNode(new IntAddNode);
+    auto& add = exec.registerNode(new IntAddNode());
     std::stringstream stream;
     auto& printer = exec.registerNode(new IntPrinterNode(stream));
 
@@ -121,4 +121,37 @@ TEST_CASE("Test simple execution example") {
 
     exec.execute(&printer);
     REQUIRE(stream.str() == "96");
+}
+TEST_CASE("Execution stress test") {
+    NodeExecution exec;
+    size_t n = 65536;
+
+    std::vector<NodeBase*> constNodes(n);
+    for (int i = 0; i < n; ++i) {
+        constNodes[i] = &exec.registerNode(new ConstIntNode(1));
+    }
+    n /= 2;
+    std::vector<NodeBase*> addNodes(n);
+    for (int i = 0; i < n; ++i) {
+        addNodes[i] = &exec.registerNode(new IntAddNode());
+        connect(*addNodes[i], *constNodes[2*i], 0, 0);
+        connect(*addNodes[i], *constNodes[2*i+1], 1, 0);
+    }
+    while (n > 1) {
+        n /= 2;
+        std::vector<NodeBase*> newNodes(n);
+        for (int i = 0; i < n; ++i) {
+            newNodes[i] = &exec.registerNode(new IntAddNode());
+            connect(*newNodes[i], *addNodes[2*i], 0, 0);
+            connect(*newNodes[i], *addNodes[2*i+1], 1, 0);
+        }
+        addNodes = std::move(newNodes);
+    }
+    REQUIRE(addNodes.size() == 1);
+    std::stringstream ss;
+    auto& printer = exec.registerNode(new IntPrinterNode(ss));
+    connect(printer, *addNodes[0], 0, 0);
+    exec.execute(&printer);
+    REQUIRE(ss.str() == "65536");
+    exec.execute(&printer);
 }

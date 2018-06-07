@@ -61,9 +61,12 @@ struct DummyInConn : public InConnBase {
 };
 
 template<typename T>
-class InConn : public InConnBase {
+class InConn : public InConnBase, public Observer {
 public:
     void connect(const OutConnBase* outConn) override {
+        if (m_outConn != nullptr) {
+            m_outConn->getOwnerNode()->detach(this);
+        }
         if (outConn == nullptr) {
             m_outConn = nullptr;
         } else {
@@ -72,6 +75,7 @@ public:
                 throw PIPELINE_EXCEPTION("Cannot connect to output because types don't match");
             }
             m_outConn = outConnCast;
+            m_outConn->getOwnerNode()->attach(this);
         }
     }
     bool isConnected() const override {
@@ -91,6 +95,11 @@ public:
             throw PIPELINE_EXCEPTION("Data is not available on the connected output");
         }
         return m_outConn->getData();
+    }
+
+protected:
+    void targetDeleted() override {
+        m_outConn = nullptr;
     }
 private:
     const OutConn<T>* m_outConn = nullptr;

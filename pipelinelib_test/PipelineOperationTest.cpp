@@ -153,7 +153,6 @@ TEST_CASE("Execution stress test") {
     connect(printer, *addNodes[0], 0, 0);
     exec.execute(&printer);
     REQUIRE(ss.str() == "65536");
-    exec.execute(&printer);
 }
 TEST_CASE("Output to multiple nodes") {
     ConstIntNode n(42);
@@ -165,4 +164,17 @@ TEST_CASE("Output to multiple nodes") {
     printer1.evaluate();
     printer2.evaluate();
     REQUIRE(ss.str() == "4242");
+}
+TEST_CASE("Deleting nodes") {
+    auto* n = new ConstIntNode(42);
+    std::stringstream ss;
+    IntPrinterNode printer(ss);
+
+    connect(printer, *n, 0, 0);
+    n->evaluate();
+    printer.evaluate();
+    REQUIRE(ss.str() == "42");
+
+    delete n;
+    REQUIRE_FALSE(printer.isConnected());
 }

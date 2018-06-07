@@ -2,6 +2,7 @@
 #define NODEBASE_HPP
 
 #include <vector>
+#include "Observer.hpp"
 
 namespace mfep {
 namespace Pipeline {
@@ -9,8 +10,7 @@ namespace Pipeline {
 struct InConnBase;
 struct OutConnBase;
 
-struct NodeBase {
-    virtual                       ~NodeBase       () = default;
+struct NodeBase : public Observable {
     virtual bool                   isConnected    () const = 0;
     virtual bool                   isDataAvailable() const = 0;
     virtual void                   evaluate       () = 0;

@@ -13,10 +13,3 @@ bool mfep::Pipeline::isDependentOn(const mfep::Pipeline::NodeBase* node,
     }
     return false;
 }
-
-void mfep::Pipeline::connect(NodeBase& inNode, const NodeBase& outNode, size_t inIdx, size_t outIdx) {
-    if (isDependentOn(&inNode, &outNode)) {
-        throw PIPELINE_EXCEPTION("Cannot connect: output node is dependent on input node");
-    }
-    inNode.getInConn(inIdx)->connect(outNode.getOutConn(outIdx));
-};

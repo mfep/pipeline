@@ -6,7 +6,7 @@
 #include <memory>
 #include <algorithm>
 #include "PipelineException.hpp"
-#include "NodeBase.hpp"
+#include "NodeAlgorithms.hpp"
 
 namespace mfep {
 namespace Pipeline {
@@ -35,9 +35,6 @@ public:
     }
     void fillData(unique_ptr<T>& newData) {
         m_data = std::move(newData);
-    }
-    void clearData() {
-        m_data = nullptr;
     }
 
 private:
@@ -101,6 +98,7 @@ protected:
     void targetDeleted() override {
         m_outConn = nullptr;
     }
+
 private:
     const OutConn<T>* m_outConn = nullptr;
 };
@@ -175,18 +173,6 @@ public:
         m_outArr (tupleToArray<OutConnBase*, OutConnTup>(m_outTup))
     {
     }
-    InConnBase* getInConn(size_t index) override {
-        if (index >= m_inArr.size()) {
-            throw PIPELINE_EXCEPTION("Input overindexed");
-        }
-        return m_inArr[index];
-    }
-    const OutConnBase* getOutConn(size_t index) const override {
-        if (index >= m_outArr.size()) {
-            throw PIPELINE_EXCEPTION("Output overindexed");
-        }
-        return m_outArr[index];
-    }
     bool isConnected() const override {
         for (const auto* inConn : m_inArr) {
             if (!inConn->isConnected()) {
@@ -206,14 +192,6 @@ public:
         }
         return true;
     }
-    void evaluate() override {
-        if(!isDataAvailable()) {
-            throw PIPELINE_EXCEPTION("Cannot evaluate, there's no data on every input");
-        }
-        auto inputData = extractDataFromInputs(m_inTup);
-        auto outData = process(inputData);
-        fillOutputsData(m_outTup, outData);
-    }
     std::vector<NodeBase*> getInputNodes() const override {
         std::vector<NodeBase*> retval;
         for (const auto& inputNode : m_inArr) {
@@ -224,13 +202,43 @@ public:
         }
         return retval;
     }
-
-protected:
+    const OutConnBase* getOutConn(size_t index) const override {
+        if (index >= m_outArr.size()) {
+            throw PIPELINE_EXCEPTION("Output overindexed");
+        }
+        return m_outArr[index];
+    }
+    void evaluate() override {
+        if(!isDataAvailable()) {
+            throw PIPELINE_EXCEPTION("Cannot evaluate, there's no data on every input");
+        }
+        auto inputData = extractDataFromInputs(m_inTup);
+        auto outData = process(inputData);
+        fillOutputsData(m_outTup, outData);
+    }
+    void connect(NodeBase& inputNode, size_t inputIdx, size_t outputIdx) override {
+        if (isDependentOn(this, &inputNode)) {
+            throw PIPELINE_EXCEPTION("Cannot connect: output node is dependent on input node");
+        }
+        getInConn(inputIdx)->connect(inputNode.getOutConn(outputIdx));
+        inputNode.attach(this);
+    }
+    void disconnect(size_t inputIdx) override {
+        getInConn(inputIdx)->getConnectedNode()->detach(this);
+        getInConn(inputIdx)->connect(nullptr);
+    }
     using InData  = typename ConnTupHelper<InTup>::inDataType;
     using OutData = typename ConnTupHelper<OutTup>::outDataType;
     virtual OutData process(const InData& inData) const = 0;
 
 private:
+    InConnBase* getInConn(size_t index) {
+        if (index >= m_inArr.size()) {
+            throw PIPELINE_EXCEPTION("Input overindexed");
+        }
+        return m_inArr[index];
+    }
+
     using InConnTup  = typename ConnTupHelper<InTup>::inTupleType;
     using OutConnTup = typename ConnTupHelper<OutTup>::outTupleType;
     InConnTup  m_inTup;

@@ -61,11 +61,11 @@ TEST_CASE("Node operation on simple types") {
     REQUIRE_FALSE(printer.isConnected());
 
     // check being connected
-    connect(add, n1, 0, 0);
+    connect(add, n1);
     REQUIRE_FALSE(add.isConnected());
-    connect(add, n2, 1, 0);
+    connect(add, n2, 1);
     REQUIRE(add.isConnected());
-    connect(printer, add, 0, 0);
+    connect(printer, add);
     REQUIRE(printer.isConnected());
 
     // check dependencies
@@ -101,11 +101,11 @@ TEST_CASE("Check exceptions") {
     REQUIRE_THROWS_AS(toFloat.evaluate(), PipelineException);
 
     // cannot connect different types
-    REQUIRE_THROWS_AS(connect(add1, toFloat, 0, 0), PipelineException);
+    REQUIRE_THROWS_AS(connect(add1, toFloat), PipelineException);
 
     // circular dependencies are not allowed
-    connect(add1, add2, 0, 0);
-    REQUIRE_THROWS_AS(connect(add2, add1, 0, 0), PipelineException);
+    connect(add1, add2);
+    REQUIRE_THROWS_AS(connect(add2, add1), PipelineException);
 }
 TEST_CASE("Test simple execution example") {
     NodeExecution exec;
@@ -115,9 +115,9 @@ TEST_CASE("Test simple execution example") {
     std::stringstream stream;
     auto& printer = exec.registerNode(new IntPrinterNode(stream));
 
-    connect(add, n1, 0, 0);
-    connect(add, n2, 1, 0);
-    connect(printer, add, 0, 0);
+    connect(add, n1);
+    connect(add, n2, 1);
+    connect(printer, add);
 
     exec.execute(&printer);
     REQUIRE(stream.str() == "96");
@@ -134,23 +134,23 @@ TEST_CASE("Execution stress test") {
     std::vector<NodeBase*> addNodes(n);
     for (int i = 0; i < n; ++i) {
         addNodes[i] = &exec.registerNode(new IntAddNode());
-        connect(*addNodes[i], *constNodes[2*i], 0, 0);
-        connect(*addNodes[i], *constNodes[2*i+1], 1, 0);
+        connect(*addNodes[i], *constNodes[2*i]);
+        connect(*addNodes[i], *constNodes[2*i+1], 1);
     }
     while (n > 1) {
         n /= 2;
         std::vector<NodeBase*> newNodes(n);
         for (int i = 0; i < n; ++i) {
             newNodes[i] = &exec.registerNode(new IntAddNode());
-            connect(*newNodes[i], *addNodes[2*i], 0, 0);
-            connect(*newNodes[i], *addNodes[2*i+1], 1, 0);
+            connect(*newNodes[i], *addNodes[2*i]);
+            connect(*newNodes[i], *addNodes[2*i+1], 1);
         }
         addNodes = std::move(newNodes);
     }
     REQUIRE(addNodes.size() == 1);
     std::stringstream ss;
     auto& printer = exec.registerNode(new IntPrinterNode(ss));
-    connect(printer, *addNodes[0], 0, 0);
+    connect(printer, *addNodes[0]);
     exec.execute(&printer);
     REQUIRE(ss.str() == "65536");
 }
@@ -158,8 +158,8 @@ TEST_CASE("Output to multiple nodes") {
     ConstIntNode n(42);
     std::stringstream ss;
     IntPrinterNode printer1(ss), printer2(ss);
-    connect(printer1, n, 0, 0);
-    connect(printer2, n, 0, 0);
+    connect(printer1, n);
+    connect(printer2, n);
     n.evaluate();
     printer1.evaluate();
     printer2.evaluate();
@@ -170,7 +170,7 @@ TEST_CASE("Deleting nodes") {
     std::stringstream ss;
     IntPrinterNode printer(ss);
 
-    connect(printer, *n, 0, 0);
+    connect(printer, *n);
     n->evaluate();
     printer.evaluate();
     REQUIRE(ss.str() == "42");

@@ -7,7 +7,7 @@
 namespace mfep {
 namespace Pipeline {
 
-class PipelineException : public std::exception {
+class PipelineException : public std::runtime_error {
 public:
     PipelineException(const char* message, const char* function, const char* file, int line) noexcept;
     void print       (std::ostream& stream) const;

@@ -170,7 +170,8 @@ public:
         m_inTup (),
         m_outTup (ConnTupHelper<OutTup>::createOutTuple(this)),
         m_inArr (tupleToArray<InConnBase*, InConnTup>(m_inTup)),
-        m_outArr (tupleToArray<OutConnBase*, OutConnTup>(m_outTup))
+        m_outArr (tupleToArray<OutConnBase*, OutConnTup>(m_outTup)),
+        m_isDataValid (false)
     {
     }
     bool isConnected() const override {
@@ -209,12 +210,16 @@ public:
         return m_outArr[index];
     }
     void evaluate() override {
+        if (m_isDataValid) {
+            return;
+        }
         if(!isDataAvailable()) {
             throw PIPELINE_EXCEPTION("Cannot evaluate, there's no data on every input");
         }
         auto inputData = extractDataFromInputs(m_inTup);
         auto outData = process(inputData);
         fillOutputsData(m_outTup, outData);
+        m_isDataValid = true;
     }
     void connect(NodeBase& inputNode, size_t inputIdx, size_t outputIdx) override {
         if (isDependentOn(this, &inputNode)) {
@@ -222,16 +227,30 @@ public:
         }
         getInConn(inputIdx)->connect(inputNode.getOutConn(outputIdx));
         inputNode.attach(this);
+        invalidate();
     }
     void disconnect(size_t inputIdx) override {
         getInConn(inputIdx)->getConnectedNode()->detach(this);
         getInConn(inputIdx)->connect(nullptr);
+        invalidate();
     }
     using InData  = typename ConnTupHelper<InTup>::inDataType;
     using OutData = typename ConnTupHelper<OutTup>::outDataType;
     virtual OutData process(const InData& inData) const = 0;
 
+protected:
+    void invalidate() {
+        m_isDataValid = false;
+        changed();
+    }
+
 private:
+    void targetChanged() override {
+        invalidate();
+    }
+    void targetDeleted() override {
+        invalidate();
+    }
     InConnBase* getInConn(size_t index) {
         if (index >= m_inArr.size()) {
             throw PIPELINE_EXCEPTION("Input overindexed");
@@ -245,6 +264,7 @@ private:
     OutConnTup m_outTup;
     typename ConnTupHelper<InTup>::inArrayType   m_inArr;
     typename ConnTupHelper<OutTup>::outArrayType m_outArr;
+    bool m_isDataValid;
 };
 
 }   // namespace Pipeline

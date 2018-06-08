@@ -10,13 +10,16 @@ class ConstIntNode : public Node<std::tuple<>, std::tuple<int>> {
 public:
     explicit ConstIntNode(int value) : m_value(value) {
     }
+    void setValue (int value) {
+        m_value = value;
+        invalidate();
+    }
 
 private:
     OutData process(const InData&) const override {
         return OutData{ std::make_unique<int>(m_value) };
     }
-
-    const int m_value;
+    int m_value;
 };
 
 class IntAddNode : public Node<std::tuple<int, int>, std::tuple<int>> {
@@ -158,6 +161,10 @@ TEST_CASE("Execution stress test") {
     printer.connect(*addNodes[0], 0, 0);
     exec.execute(&printer);
     REQUIRE(ss.str() == "65536");
+
+    // test caching
+    exec.execute(&printer);
+    REQUIRE(ss.str() == "65536");
 }
 TEST_CASE("Output to multiple nodes") {
     ConstIntNode n(42);
@@ -182,4 +189,24 @@ TEST_CASE("Deleting nodes") {
 
     delete n;
     REQUIRE_FALSE(printer.isConnected());
+}
+TEST_CASE("Changing nodes") {
+    NodeExecution exec;
+    auto& n1 = exec.registerNode(new ConstIntNode(1));
+    auto& n2 = exec.registerNode(new ConstIntNode(3));
+    auto& add = exec.registerNode(new IntAddNode());
+    std::stringstream ss;
+    auto& printer = exec.registerNode(new IntPrinterNode(ss));
+
+    add.connect(n1, 0, 0);
+    add.connect(n2, 1, 0);
+    printer.connect(add, 0, 0);
+    exec.execute(&printer);
+    exec.execute(&printer);
+    REQUIRE(ss.str() == "4");
+    ss.str("");
+    n1.setValue(2);
+    exec.execute(&printer);
+    exec.execute(&printer);
+    REQUIRE(ss.str() == "5");
 }

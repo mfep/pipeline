@@ -16,11 +16,6 @@ std::vector<NodeBase*> collectInputNodesToEvaluate(NodeBase* node) {
 
 }
 
-NodeBase& NodeExecution::registerNode(NodeBase* node) {
-    m_nodes.push_back(std::unique_ptr<NodeBase>(node));
-    return **(--m_nodes.end());
-}
-
 void NodeExecution::execute(NodeBase *endNode) {
     std::vector<NodeBase*> executionList = collectInputNodesToEvaluate(endNode);
     while(!executionList.empty()) {

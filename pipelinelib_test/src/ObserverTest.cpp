@@ -1,5 +1,5 @@
 #include <sstream>
-#include "3rd_party/catch.hpp"
+#include "catch.hpp"
 #include "Observer.hpp"
 
 using namespace mfep::Pipeline;

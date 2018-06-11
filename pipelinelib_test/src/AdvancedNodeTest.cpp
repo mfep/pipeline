@@ -1,5 +1,5 @@
 #include <vector>
-#include "3rd_party/catch.hpp"
+#include "catch.hpp"
 #include "ConstNode.hpp"
 
 using namespace mfep::Pipeline;

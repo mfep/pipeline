@@ -114,7 +114,7 @@ array<PtrT, std::tuple_size<std::decay_t<Tuple>>::value> tupleToArray(Tuple& tup
     return tupleToArrayImpl(foo, tup, std::make_index_sequence<tupleSize>{});
 };
 template<>
-array<InConnBase*, 1> tupleToArray<InConnBase*, tuple<DummyInConn>>(tuple<DummyInConn>& tup) {
+inline array<InConnBase*, 1> tupleToArray<InConnBase*, tuple<DummyInConn>>(tuple<DummyInConn>& tup) {
     return { &std::get<0>(tup) };
 };
 
@@ -126,7 +126,7 @@ template<typename ... DataTs>
 tuple<const DataTs&...> extractDataFromInputs(const tuple<InConn<DataTs>...>& inputConns) {
     return extractDataFromInputsImpl(inputConns, std::index_sequence_for<DataTs...>{});
 }
-tuple<> extractDataFromInputs(const tuple<DummyInConn>&) {
+inline tuple<> extractDataFromInputs(const tuple<DummyInConn>&) {
     return {};
 }
 

@@ -6,5 +6,6 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(${PROJECT_NAME}
         main.cpp
         PipelineOperationTest.cpp
-        ObserverTest.cpp)
+        ObserverTest.cpp
+        AdvancedNodeTest.cpp)
 target_link_libraries(${PROJECT_NAME} pipelinelib)

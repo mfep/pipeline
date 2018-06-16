@@ -11,9 +11,10 @@ namespace Pipeline {
 class NodeExecution {
 public:
     template<typename T>
-    T& registerNode(T* node) {
-        m_nodes.push_back(std::unique_ptr<NodeBase>(node));
-        return *node;
+    T& registerNode(std::unique_ptr<T>&& nodePtr) {
+        T* ptr = nodePtr.get();
+        m_nodes.push_back(std::move(nodePtr));
+        return *ptr;
     }
     void execute(NodeBase* endNode);
 

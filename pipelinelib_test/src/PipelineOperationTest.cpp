@@ -117,11 +117,11 @@ TEST_CASE("Check exceptions") {
 }
 TEST_CASE("Test simple execution example") {
     NodeExecution exec;
-    auto& n1 = exec.registerNode(new ConstIntNode(150));
-    auto& n2 = exec.registerNode(new ConstIntNode(-54));
-    auto& add = exec.registerNode(new IntAddNode());
+    auto& n1 = exec.registerNode(std::make_unique<ConstIntNode>(150));
+    auto& n2 = exec.registerNode(std::make_unique<ConstIntNode>(-54));
+    auto& add = exec.registerNode(std::make_unique<IntAddNode>());
     std::stringstream stream;
-    auto& printer = exec.registerNode(new IntPrinterNode(stream));
+    auto& printer = exec.registerNode(std::make_unique<IntPrinterNode>(stream));
 
     add.connect(n1, 0, 0);
     add.connect(n2, 1, 0);
@@ -136,12 +136,12 @@ TEST_CASE("Execution stress test") {
 
     std::vector<NodeBase*> constNodes(n);
     for (int i = 0; i < n; ++i) {
-        constNodes[i] = &exec.registerNode(new ConstIntNode(1));
+        constNodes[i] = &exec.registerNode(std::make_unique<ConstIntNode>(1));
     }
     n /= 2;
     std::vector<NodeBase*> addNodes(n);
     for (int i = 0; i < n; ++i) {
-        addNodes[i] = &exec.registerNode(new IntAddNode());
+        addNodes[i] = &exec.registerNode(std::make_unique<IntAddNode>());
         addNodes[i]->connect(*constNodes[2*i], 0, 0);
         addNodes[i]->connect(*constNodes[2*i+1], 1, 0);
     }
@@ -149,7 +149,7 @@ TEST_CASE("Execution stress test") {
         n /= 2;
         std::vector<NodeBase*> newNodes(n);
         for (int i = 0; i < n; ++i) {
-            newNodes[i] = &exec.registerNode(new IntAddNode());
+            newNodes[i] = &exec.registerNode(std::make_unique<IntAddNode>());
             newNodes[i]->connect(*addNodes[2*i], 0, 0);
             newNodes[i]->connect(*addNodes[2*i+1], 1, 0);
         }
@@ -157,7 +157,7 @@ TEST_CASE("Execution stress test") {
     }
     REQUIRE(addNodes.size() == 1);
     std::stringstream ss;
-    auto& printer = exec.registerNode(new IntPrinterNode(ss));
+    auto& printer = exec.registerNode(std::make_unique<IntPrinterNode>(ss));
     printer.connect(*addNodes[0], 0, 0);
     exec.execute(&printer);
     REQUIRE(ss.str() == "65536");
@@ -192,11 +192,11 @@ TEST_CASE("Deleting nodes") {
 }
 TEST_CASE("Changing nodes") {
     NodeExecution exec;
-    auto& n1 = exec.registerNode(new ConstIntNode(1));
-    auto& n2 = exec.registerNode(new ConstIntNode(3));
-    auto& add = exec.registerNode(new IntAddNode());
+    auto& n1 = exec.registerNode(std::make_unique<ConstIntNode>(1));
+    auto& n2 = exec.registerNode(std::make_unique<ConstIntNode>(3));
+    auto& add = exec.registerNode(std::make_unique<IntAddNode>());
     std::stringstream ss;
-    auto& printer = exec.registerNode(new IntPrinterNode(ss));
+    auto& printer = exec.registerNode(std::make_unique<IntPrinterNode>(ss));
 
     add.connect(n1, 0, 0);
     add.connect(n2, 1, 0);

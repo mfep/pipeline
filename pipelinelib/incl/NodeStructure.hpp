@@ -131,12 +131,12 @@ inline tuple<> extractDataFromInputs(const tuple<DummyInConn>&) {
 }
 
 template<typename ... DataTs, size_t ... Indices>
-void fillOutputsDataImpl(tuple<OutConn<DataTs...>>& outputs, tuple<unique_ptr<DataTs>...>& data, std::index_sequence<Indices...>) {
+void fillOutputsDataImpl(tuple<OutConn<DataTs>...>& outputs, tuple<unique_ptr<DataTs>...>& data, std::index_sequence<Indices...>) {
     using swallow = int[];
     (void)swallow{ (std::get<Indices>(outputs).fillData(std::get<Indices>(data)),1)... };
 }
 template<typename ... DataTs>
-void fillOutputsData(tuple<OutConn<DataTs...>>& outputs, tuple<unique_ptr<DataTs>...>& data) {
+void fillOutputsData(tuple<OutConn<DataTs>...>& outputs, tuple<unique_ptr<DataTs>...>& data) {
     fillOutputsDataImpl(outputs, data, std::index_sequence_for<DataTs...>{});
 }
 

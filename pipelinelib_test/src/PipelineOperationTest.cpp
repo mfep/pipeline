@@ -50,7 +50,15 @@ class ToFloatNode : public Node<std::tuple<int>, std::tuple<float>> {
     }
 };
 
+class IntDistributorNode : public Node<std::tuple<int>, std::tuple<int, int, int>> {
+    OutData process(const InData& input) const override {
+        const int value = std::get<0>(input);
+        return OutData{ std::make_unique<int>(value), std::make_unique<int>(value), std::make_unique<int>(value) };
+    }
+};
+
 TEST_CASE("Node operation on simple types") {
+    IntDistributorNode dist;
     NodeExecution exec;
     ConstIntNode n0(1000), n1(150), n2(-54);
     IntAddNode add;

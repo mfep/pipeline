@@ -13,19 +13,20 @@ template<typename ... InputTypes, typename OutputType>
 class AdapterHelper<tuple<InputTypes...>, OutputType> {
 public:
     using InputTypesOutConnPtrTuple = tuple<const OutConn<InputTypes>* ...>;
+
+    static constexpr size_t TupleSize = std::tuple_size<std::decay_t<InputTypesOutConnPtrTuple >>::value;
+
     static void fillOutConnPtrTuple(InputTypesOutConnPtrTuple& connTuple, const OutConnBase* conn) {
         fillOutConnPtrTupleImpl(connTuple, conn, std::make_index_sequence<TupleSize>{});
     }
     static const OutConnBase* getValidElement(const InputTypesOutConnPtrTuple& connTuple) {
         return getValidElementImpl(connTuple, std::make_index_sequence<TupleSize>{});
     }
-    static const OutputType& getConvertedData(const InputTypesOutConnPtrTuple& connTuple) {
+    static const OutputType* getConvertedData(const InputTypesOutConnPtrTuple& connTuple) {
         return getConvertedDataImpl(connTuple, std::make_index_sequence<TupleSize>{});
     }
 
 private:
-    static constexpr size_t TupleSize = std::tuple_size<std::decay_t<InputTypesOutConnPtrTuple >>::value;
-
     template<size_t ... Indices>
     static void fillOutConnPtrTupleImpl(InputTypesOutConnPtrTuple& connTuple, const OutConnBase* conn,
                                         std::index_sequence<Indices...>)
@@ -43,13 +44,13 @@ private:
         return it == std::end(convertedPtrs) ? nullptr : *it;
     };
     template<size_t ... Indices>
-    static const OutputType& getConvertedDataImpl(const InputTypesOutConnPtrTuple& connTuple,
+    static const OutputType* getConvertedDataImpl(const InputTypesOutConnPtrTuple& connTuple,
                                                std::index_sequence<Indices...>)
     {
         const OutputType* retPtr = nullptr;
         (void)(int[]) { (retPtr = std::get<Indices>(connTuple) == nullptr
                 ? retPtr : static_cast<const OutputType*>(&std::get<Indices>(connTuple)->getData()), 1)... };
-        return *retPtr;
+        return retPtr;
     }
 };
 
@@ -77,7 +78,7 @@ public:
         }
         return Helper::getValidElement(m_connections)->getOwnerNode();
     }
-    const OutputType& getConvertedData() const {
+    const OutputType* getConvertedData() const {
         if (!isDataAvailable()) {
             throw PIPELINE_EXCEPTION("Data is not available on the connected output");
         }
@@ -88,9 +89,54 @@ private:
     typename Helper::InputTypesOutConnPtrTuple m_connections;
 };
 
-template<typename InputTypesTuple, typename OutputType>
-class InputAdapter : public NodeBase {
+template<typename OutputData>
+class AdapterOutConn : public OutConn<OutputData> {
+public:
+    explicit AdapterOutConn(NodeBase* ownerNode) :
+        OutConn<OutputData>(ownerNode),
+        m_data(nullptr)
+    {
+    }
+    const OutputData& getData() const override {
+        if (m_data == nullptr) {
+            throw PIPELINE_EXCEPTION("Data pointer is null");
+        }
+        return *m_data;
+    }
+    bool isDataAvailable() const override {
+        return m_data != nullptr;
+    }
+    void fillData(unique_ptr<OutputData>&) override {
+        throw PIPELINE_EXCEPTION("fillData should not be called on AdapterOutConn");
+    }
+    void setDataPtr(const OutputData* data) {
+        m_data = data;
+    }
 
+private:
+    const OutputData* m_data;
+};
+
+template<typename InputTypesTuple, typename OutputType>
+class AdapterNode : public NodeBaseInOut<1, 1> {
+public:
+    AdapterNode() :
+        NodeBaseClass({ &m_inConn }, { &m_outConn }),
+        m_outConn(this)
+    {
+    }
+    void evaluate() override {
+        if(!NodeBaseClass::isDataAvailable()) {
+            throw PIPELINE_EXCEPTION("Cannot evaluate, there's no data on every input");
+        }
+        m_outConn.setDataPtr(m_inConn.getConvertedData());
+        NodeBaseClass::executed();
+    }
+
+private:
+    using NodeBaseClass = NodeBaseInOut<1,1>;
+    AdapterInConn<InputTypesTuple, OutputType> m_inConn;
+    AdapterOutConn<OutputType> m_outConn;
 };
 
 }   // namespace Pipeline

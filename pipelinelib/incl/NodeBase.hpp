@@ -22,6 +22,8 @@ struct NodeBase : public Observable, public Observer {
 
 struct OutConnBase {
     virtual ~OutConnBase() = default;
+    virtual bool isDataAvailable() const = 0;
+    virtual NodeBase* getOwnerNode() const = 0;
 };
 
 struct InConnBase {

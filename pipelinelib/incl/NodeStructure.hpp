@@ -21,10 +21,10 @@ public:
     explicit OutConn (NodeBase* ownerNode) : m_ownerNode(ownerNode)
     {
     }
-    bool isDataAvailable() const {
+    bool isDataAvailable() const override {
         return m_data != nullptr;
     }
-    NodeBase* getOwnerNode() const {
+    NodeBase* getOwnerNode() const override {
         return m_ownerNode;
     }
     const T& getData() const {

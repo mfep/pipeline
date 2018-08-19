@@ -1,5 +1,4 @@
-#ifndef NODEEXECUTION_HPP
-#define NODEEXECUTION_HPP
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -24,5 +23,3 @@ private:
 
 }
 }
-
-#endif //NODEEXECUTION_HPP

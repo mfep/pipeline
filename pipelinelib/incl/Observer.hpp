@@ -1,5 +1,4 @@
-#ifndef OBSERVER_HPP
-#define OBSERVER_HPP
+#pragma once
 
 #include <set>
 #include "PipelineException.hpp"
@@ -37,5 +36,3 @@ private:
 
 }
 }
-
-#endif //OBSERVER_HPP

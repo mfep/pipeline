@@ -1,5 +1,4 @@
-#ifndef INPUTADAPTER_HPP
-#define INPUTADAPTER_HPP
+#pragma once
 
 #include <algorithm>
 #include "NodeStructure.hpp"
@@ -141,5 +140,3 @@ private:
 
 }   // namespace Pipeline
 }   // namespace mfep
-
-#endif //INPUTADAPTER_HPP

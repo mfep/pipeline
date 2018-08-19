@@ -1,5 +1,4 @@
-#ifndef NODEBASE_HPP
-#define NODEBASE_HPP
+#pragma once
 
 #include <vector>
 #include "Observer.hpp"
@@ -36,5 +35,3 @@ struct InConnBase {
 
 }
 }
-
-#endif //NODEBASE_HPP

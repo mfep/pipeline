@@ -1,5 +1,4 @@
-#ifndef NODEALGORITHMS_HPP
-#define NODEALGORITHMS_HPP
+#pragma once
 
 #include <cstddef>
 #include "NodeBase.hpp"
@@ -11,5 +10,3 @@ bool isDependentOn(const NodeBase* node, const NodeBase* dependentNode);
 
 }
 }
-
-#endif //NODEALGORITHMS_HPP

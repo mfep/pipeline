@@ -1,5 +1,4 @@
-#ifndef CONSTNODE_HPP
-#define CONSTNODE_HPP
+#pragma once
 
 #include "NodeStructure.hpp"
 
@@ -31,5 +30,3 @@ private:
 
 }
 }
-
-#endif //CONSTNODE_HPP

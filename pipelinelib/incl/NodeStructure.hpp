@@ -1,5 +1,4 @@
-#ifndef NODESTRUCTURE_HPP
-#define NODESTRUCTURE_HPP
+#pragma once
 
 #include <tuple>
 #include <array>
@@ -292,5 +291,3 @@ private:
 
 }   // namespace Pipeline
 }   // namespace mfep
-
-#endif //NODESTRUCTURE_HPP

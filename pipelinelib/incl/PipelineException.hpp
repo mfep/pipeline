@@ -1,5 +1,4 @@
-#ifndef PIPELINEEXCEPTION_HPP
-#define PIPELINEEXCEPTION_HPP
+#pragma once
 
 #include <exception>
 #include <ostream>
@@ -22,5 +21,3 @@ private:
 
 }   // namespace Pipeline
 }   // namespace mfep
-
-#endif //PIPELINEEXCEPTION_HPP
